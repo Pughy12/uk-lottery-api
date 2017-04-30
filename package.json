@@ -1,0 +1,30 @@
+{
+  "name": "uk-lottery-api",
+  "version": "1.0.0",
+  "description": "A node application for scraping lottery results from the web and providing an easy-to-use API to access the data",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Pughy12/uk-lottery-api.git"
+  },
+  "author": "Michael Pugh",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Pughy12/uk-lottery-api/issues"
+  },
+  "homepage": "https://github.com/Pughy12/uk-lottery-api#readme",
+  "dependencies": {
+    "express": "^4.15.2",
+    "mongodb": "^2.2.26",
+    "cheerio": "latest",
+    "request": "latest"
+  },
+  "devDependencies": {
+    "eslint": "^3.19.0",
+    "eslint-config-google": "^0.7.1"
+  }
+}
