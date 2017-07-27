@@ -22,9 +22,5 @@
     "mongodb": "^2.2.26",
     "cheerio": "latest",
     "request": "latest"
-  },
-  "devDependencies": {
-    "eslint": "^3.19.0",
-    "eslint-config-google": "^0.7.1"
   }
 }

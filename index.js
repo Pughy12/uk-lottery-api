@@ -1,16 +1,17 @@
-const cheerio     = require('cheerio'),
-      request     = require('request'),
-      http        = require('https'),
-      fs          = require('fs'),
-      express     = require('express'),
-      MongoClient = require('mongodb').MongoClient,
-      assert      = require('assert'),
-      url         = require('url');
+const cheerio = require('cheerio'),
+    request = require('request'),
+    http = require('https'),
+    fs = require('fs'),
+    express = require('express'),
+    MongoClient = require('mongodb').MongoClient,
+    assert = require('assert'),
+    url = require('url');
 
 // To-do:
 // # Learn
 // - How to use MongoDB properly
 // - How to use callbacks (because the request is async and the db save op is attempted before it's finished)
+//   - Maybe to fix just save the results and don't query until after it's done, use a HTTP GET request
 //
 // # Scraping
 // - Automatically scrape all lotto archive data on startup (NOT DONE)
@@ -37,25 +38,25 @@ const lottoDataCollection = "lottoData";
 
 // Start the express server, and do some startup things
 app.listen(serverPort, function() {
-	console.log(`Server started on port ${serverPort}`);
+    console.log(`Server started on port ${serverPort}`);
 
-	// Connect to the database
-	MongoClient.connect(mongoUrl, function(err, db) {
-		assert.equal(null, err);
-		console.log(`Successfully connected to database at: ${mongoUrl}`);
+    // Connect to the database
+    MongoClient.connect(mongoUrl, function(err, db) {
+        assert.equal(null, err);
+        console.log(`Successfully connected to database at: ${mongoUrl}`);
 
-		// Get lotto results and store them in the db so they can be queried later
-		// TODO: Change to go through the www.lottery.co.uk archive and get all results on startup
-		const results = scrapeLottoResultsByDate('17-12-2016');
+        // Get lotto results and store them in the db so they can be queried later
+        // TODO: Change to go through the www.lottery.co.uk archive and get all results on startup
+        // const results = scrapeLottoResultsByDate('17-12-2016');
 
-		// // Save the results to the database
-		if (!results) {
-			console.log("No results available to save to the database");
-			return;
-		} else {
-			saveResultsToDb(db, results);
-		}
-	});
+        // // // Save the results to the database
+        // if (!results) {
+        //     console.log("No results available to save to the database");
+        //     return;
+        // } else {
+        //     saveResultsToDb(db, results);
+        // }
+    });
 });
 
 //// API ENDPOINTS
@@ -77,41 +78,41 @@ app.listen(serverPort, function() {
 //}
 
 /**
-* Get results of a specific date for the lotto and store them in the database
-*
-* @param date - The date to lookup the lottery results of (e.g. 31-12-2016)
-*/
+ * Get results of a specific date for the lotto and store them in the database
+ *
+ * @param date - The date to lookup the lottery results of (e.g. 31-12-2016)
+ */
 function scrapeLottoResultsByDate(date) {
     const reqUrl = `https://www.lottery.co.uk/lotto/results-${date}`;
 
-	console.log(`Making GET request to ${reqUrl} to scrape data`);
+    console.log(`Making GET request to ${reqUrl} to scrape data`);
 
-	//TODO: How do we make the result of this request be required to continue?
-	// Make GET request
+    //TODO: How do we make the result of this request be required to continue?
+    // Make GET request
     request(reqUrl, function(error, response, body) {
-		assert.equal(null, error);
+        assert.equal(null, error);
 
-		let balls;
+        let balls;
 
-		if (response && response.statusCode === 200) {
-			// Logic to scrape and save lotto ball data
-			balls = {
-				1: getValueForBall(1, body),
-				2: getValueForBall(2, body),
-				3: getValueForBall(3, body),
-				4: getValueForBall(4, body),
-				5: getValueForBall(5, body),
-				6: getValueForBall(6, body),
-				bonus: getValueForBall(7, body)
-			};
+        if (response && response.statusCode === 200) {
+            // Logic to scrape and save lotto ball data
+            balls = {
+                1: getValueForBall(1, body),
+                2: getValueForBall(2, body),
+                3: getValueForBall(3, body),
+                4: getValueForBall(4, body),
+                5: getValueForBall(5, body),
+                6: getValueForBall(6, body),
+                bonus: getValueForBall(7, body)
+            };
 
-			return balls;
-		} else {
-			console.log(`ERROR: Unsuccessful response from ${reqUrl}, no data to scrape`);
-		}
+            return balls;
+        } else {
+            console.log(`ERROR: Unsuccessful response from ${reqUrl}, no data to scrape`);
+        }
 
-		return balls;
-	});
+        return balls;
+    });
 }
 
 /**
@@ -121,15 +122,15 @@ function scrapeLottoResultsByDate(date) {
  * @param {*} data The data to save
  */
 function saveResultsToDb(db, data) {
-	console.log(`Attempting to save some data to the database: ${data}`);
-	const collection = db.collection(lottoDataCollection);
+    console.log(`Attempting to save some data to the database: ${data}`);
+    const collection = db.collection(lottoDataCollection);
 
-	collection.insertMany(data, function(err, result) {
-		assert.equal(err, null);
-		assert.equal(data.length, result.result.n);
-		assert.equal(data.length, result.ops.length);
-		console.log(`Inserted #{data.length} documents into the ${lottoDataCollection} collection`);
-	});
+    collection.insertMany(data, function(err, result) {
+        assert.equal(err, null);
+        assert.equal(data.length, result.result.n);
+        assert.equal(data.length, result.ops.length);
+        console.log(`Inserted #{data.length} documents into the ${lottoDataCollection} collection`);
+    });
 }
 
 /**
@@ -139,11 +140,11 @@ function saveResultsToDb(db, data) {
  * @param {String} body The html to extract the values from
  */
 function getValueForBall(ballNum, body) {
-	if (ballNum < 1 || ballNum > 7) {
-		console.log("Error: Invalid ball, please choose one between 1 and 7");
-		return null;
-	}
-	
-	const $ = cheerio.load(body);
+    if (ballNum < 1 || ballNum > 7) {
+        console.log("Error: Invalid ball, please choose one between 1 and 7");
+        return null;
+    }
+
+    const $ = cheerio.load(body);
     return $(`span.result:nth-child(${ballNum})`).text();
 }
